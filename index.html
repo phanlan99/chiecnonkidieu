@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minigame Chiếc Nón Kỳ Diệu Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="top-right-controls">
+        <button id="btnOpenSettings" class="btn-settings">⚙️ CÀI ĐẶT</button>
+        
+        <div class="host-controls">
+            <span class="host-label">🎤 MC ĐIỀU KHIỂN:</span>
+            <button id="btnHostCorrect" class="btn-host success">🎉 CHÚC MỪNG</button>
+            <button id="btnHostWrong" class="btn-host error">❌ CHƯA CHÍNH XÁC</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast hidden">Thông báo</div>
+
+    <div class="container">
+        <h1 id="mainTitle" class="main-title">CHIẾC NÓN KỲ DIỆU - OTC JUN'26</h1>
+
+        <div class="secret-word-section">
+            <div class="secret-header">
+                <h3 id="secretTitle">Ô CHỮ BÍ MẬT</h3>
+                <button id="revealAllBtn" class="btn-reveal">MỞ TOÀN BỘ ĐÁP ÁN</button>
+            </div>
+            
+            <div id="secretBoard" class="secret-board"></div>
+        </div>
+
+        <div class="game-main">
+            <div class="wheel-area">
+                <div class="pointer"></div>
+                <canvas id="wheelCanvas" width="500" height="500"></canvas>
+                <button id="spinBtn">QUAY</button>
+            </div>
+
+            <div class="info-area">
+                <div class="status-box">
+                    <h4>Trạng thái trò chơi</h4>
+                    <p id="gameStatus">Nhấn QUAY để bắt đầu!</p>
+                </div>
+                <div class="used-numbers">
+                    <h4>Các số đã quay:</h4>
+                    <div id="numberLog"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <h2 id="modalTitle">CÂU HỎI</h2>
+            <div id="questionText" class="question-text"></div>
+            <div id="optionsArea" class="options-grid"></div>
+            <button id="submitBtn">TRẢ LỜI</button>
+            <p id="feedback"></p>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-content settings-content">
+            <div class="settings-header">
+                <h2>CÀI ĐẶT TRÒ CHƠI</h2>
+                <button id="btnCloseSettings" class="btn-close-settings">Đóng ❌</button>
+            </div>
+            
+            <div class="settings-body">
+                <div class="form-group">
+                    <label>TIÊU ĐỀ CHƯƠNG TRÌNH:</label>
+                    <input type="text" id="inputMainTitle" class="form-control">
+                </div>
+
+                <div class="form-group">
+                    <label>Ô CHỮ BÍ MẬT (Viết liền không dấu hoặc có dấu tuỳ ý):</label>
+                    <input type="text" id="inputSecretWord" class="form-control">
+                </div>
+                
+                <hr>
+                
+                <div class="q-header">
+                    <h3>DANH SÁCH CÂU HỎI</h3>
+                    <button id="btnAddQuestion" class="btn-primary">+ Thêm câu hỏi mới</button>
+                </div>
+                
+                <div id="questionList" class="question-list">
+                    </div>
+
+                <div class="form-actions">
+                    <button id="btnSaveAll" class="btn-save-all">LƯU & KHỞI TẠO LẠI GAME</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editQuestionModal" class="modal">
+        <div class="modal-content">
+            <h3 id="editModalTitle">Thêm/Sửa Câu Hỏi</h3>
+            
+            <div class="form-group">
+                <label>Tiêu đề (VD: Câu 1 - Benzac):</label>
+                <input type="text" id="eqTitle" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Nội dung câu hỏi:</label>
+                <textarea id="eqContent" class="form-control" rows="3"></textarea>
+            </div>
+            
+            <label>Các đáp án (Tích vào ô vuông phía trước nếu đó là đáp án ĐÚNG):</label>
+            <p style="font-size: 13px; color: #e74c3c; margin-bottom: 10px;">* Nếu tích 2 ô trở lên, game tự nhận diện là câu hỏi "Nhiều đáp án đúng".</p>
+            
+            <div id="eqOptionsArea">
+                <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án A"></div>
+                <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án B"></div>
+                <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án C"></div>
+                <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án D"></div>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="btnSaveQuestion" class="btn-primary">Lưu Câu Hỏi</button>
+                <button id="btnCancelEdit" class="btn-secondary">Huỷ</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
