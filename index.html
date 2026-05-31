@@ -8,6 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&family=Montserrat:wght@800&display=swap" rel="stylesheet">
 </head>
 <body>
+    <div class="top-left-controls">
+        <button id="btnOpenRules" class="btn-rule">📜 LUẬT CHƠI</button>
+    </div>
+
     <div class="top-right-controls">
         <button id="btnOpenSettings" class="btn-settings">⚙️ CÀI ĐẶT</button>
         
@@ -52,6 +56,19 @@
         </div>
     </div>
 
+    <div id="rulesModal" class="modal">
+        <div class="modal-content rules-content">
+            <div class="settings-header">
+                <h2 style="color: #27ae60; margin: 0;">📜 LUẬT CHƠI MINIGAME</h2>
+                <button id="btnCloseRules" class="btn-close-settings">Đóng ❌</button>
+            </div>
+            <div class="rules-body">
+                <ul id="rulesContentList">
+                    </ul>
+            </div>
+        </div>
+    </div>
+
     <div id="questionModal" class="modal">
         <div class="modal-content">
             <h2 id="modalTitle">CÂU HỎI</h2>
@@ -65,7 +82,7 @@
     <div id="settingsModal" class="modal">
         <div class="modal-content settings-content">
             <div class="settings-header">
-                <h2>CÀI ĐẶT TRÒ CHƠI</h2>
+                <h2 style="margin: 0; color: var(--primary);">⚙️ CÀI ĐẶT TRÒ CHƠI</h2>
                 <button id="btnCloseSettings" class="btn-close-settings">Đóng ❌</button>
             </div>
             
@@ -80,19 +97,47 @@
                     <input type="text" id="inputSecretWord" class="form-control">
                 </div>
                 
-                <hr>
+                <hr style="margin: 20px 0;">
                 
                 <div class="q-header">
-                    <h3>DANH SÁCH CÂU HỎI</h3>
+                    <h3 style="margin: 0; color: #27ae60;">📜 QUẢN LÝ LUẬT CHƠI</h3>
+                    <button id="btnAddRule" class="btn-primary" style="background: #27ae60;">+ Thêm luật mới</button>
+                </div>
+                <div id="ruleList" class="question-list" style="margin-bottom: 20px;">
+                    </div>
+
+                <hr style="margin: 20px 0;">
+
+                <div class="q-header">
+                    <h3 style="margin: 0; color: var(--primary);">📝 DANH SÁCH CÂU HỎI</h3>
                     <button id="btnAddQuestion" class="btn-primary">+ Thêm câu hỏi mới</button>
                 </div>
-                
                 <div id="questionList" class="question-list">
                     </div>
 
                 <div class="form-actions">
-                    <button id="btnSaveAll" class="btn-save-all">LƯU & KHỞI TẠO LẠI GAME</button>
+                    <button id="btnSaveAll" class="btn-save-all">LƯU TẤT CẢ & KHỞI TẠO LẠI GAME</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="editRuleModal" class="modal">
+        <div class="modal-content">
+            <h3 id="editRuleTitle" style="color: #27ae60;">Thêm/Sửa Luật Chơi</h3>
+            
+            <div class="form-group">
+                <label>Tiêu đề bước (VD: Bước 1, Bước 2, Đặc biệt):</label>
+                <input type="text" id="erStep" class="form-control">
+            </div>
+            <div class="form-group">
+                <label>Nội dung quy định:</label>
+                <textarea id="erContent" class="form-control" rows="5"></textarea>
+            </div>
+            
+            <div style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="btnSaveRule" class="btn-primary" style="background: #27ae60;">Lưu Luật</button>
+                <button id="btnCancelEditRule" class="btn-secondary">Huỷ</button>
             </div>
         </div>
     </div>

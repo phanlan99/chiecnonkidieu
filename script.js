@@ -1,7 +1,14 @@
-// Dữ liệu mặc định chứa ĐẦY ĐỦ 10 câu hỏi và Tiêu đề
+// Dữ liệu Game (Bao gồm Cấu hình, Luật chơi, Câu hỏi)
 let gameData = {
     mainTitle: "CHIẾC NÓN KỲ DIỆU - OTC JUN'26",
     secretWord: "laithikimngan",
+    rules: [
+        { step: "Bước 1", content: "Nhấn nút QUAY để hệ thống chọn ngẫu nhiên một con số tương ứng với một câu hỏi. Các ô số đã quay trúng sẽ không lặp lại." },
+        { step: "Bước 2", content: "Chọn đáp án chính xác. Cẩn thận nhé, có những câu hỏi sẽ có nhiều đáp án đúng." },
+        { step: "Bước 3", content: "Nếu trả lời ĐÚNG, bạn được quyền đọc một con số để lật Ô CHỮ BÍ MẬT. Chữ cái trùng lặp sẽ được tự động mở." },
+        { step: "Bước 4", content: "Nếu trả lời SAI, bạn sẽ nhường quyền chơi cho người tiếp theo và mất lượt lật chữ trong vòng đó." },
+        { step: "Đặc biệt", content: "Người chơi có quyền xin đoán toàn bộ ô chữ bí mật vào bất kỳ lúc nào để giành chiến thắng chung cuộc!" }
+    ],
     questions: [
         { title: "I. Benzac - Câu 1", q: "Chọn một đáp án ĐÚNG về kết quả nghiên cứu lâm sàng của Miếng dán mụn đa năng - Benzac® Power Patch.", options: ["A. Giảm đáng kể kích thước mụn sau 6h, hiệu quả ngay cả sau khi gỡ miếng dán", "B. Tăng độ ẩm da 37% sau 1h & duy trì suốt 24h chỉ sau 1 lần sử dụng", "C. Cân bằng hệ vi sinh trên da: Duy trì số lượng & sự đa dạng", "D. Giảm 74% bã nhờn & dưỡng ẩm đến 4h chỉ sau 1 lần sử dụng"], ans: [0], multi: false },
         { title: "I. Benzac - Câu 2", q: "Chọn các đáp án ĐÚNG về cơ chế tác động của AC Technology trong sản phẩm Benzac.", options: ["A. Hấp thụ bã nhờn quá mức trên bề mặt da → Giảm dầu thừa trên da", "B. Giải phóng glycerin vào da → Giảm khô da, kích ứng; tăng tuân thủ điều trị", "C. Thay đổi trực tiếp hệ vi sinh vật trên da", "D. Bổ sung yếu tố dưỡng ẩm tự nhiên cho da"], ans: [0, 1], multi: true },
@@ -16,7 +23,7 @@ let gameData = {
     ]
 };
 
-// Trạng thái Game
+/* ================== GAME LOGIC ================== */
 let revealedLetters = [];
 let usedNumbers = [];
 let canReveal = false;
@@ -24,39 +31,23 @@ let currentQuestionIndex = -1;
 let currentRotation = 0;
 let sectors = [];
 
-// Bảng màu cho vòng quay
 const baseColors = ["#FF5733", "#33FF57", "#3357FF", "#F333FF", "#FF33A1", "#33FFF5", "#FFD433", "#8D33FF", "#FF8333", "#33FFBD", "#1abc9c", "#e67e22"];
-
 const canvas = document.getElementById("wheelCanvas");
 const ctx = canvas.getContext("2d");
 const spinBtn = document.getElementById("spinBtn");
-let toastTimeout;
 
-// Hiển thị Toast MC ở chính giữa
+let toastTimeout;
 function showToast(message, type) {
     const toast = document.getElementById("toast");
     toast.innerText = message;
     toast.className = `toast ${type}`;
-    
-    // Nếu có timeout cũ đang chạy thì xoá đi
     if(toastTimeout) clearTimeout(toastTimeout);
-    
-    // Tự động ẩn sau 3 giây (3000 ms)
-    toastTimeout = setTimeout(() => {
-        toast.classList.add("hidden");
-    }, 3000);
+    toastTimeout = setTimeout(() => { toast.classList.add("hidden"); }, 3000);
 }
 
-// Sự kiện cho nút điều khiển của MC
-document.getElementById("btnHostCorrect").onclick = () => {
-    showToast("🎉 CHÚC MỪNG! ĐÁP ÁN HOÀN TOÀN CHÍNH XÁC 🎉", "success");
-};
+document.getElementById("btnHostCorrect").onclick = () => { showToast("🎉 CHÚC MỪNG! ĐÁP ÁN HOÀN TOÀN CHÍNH XÁC 🎉", "success"); };
+document.getElementById("btnHostWrong").onclick = () => { showToast("❌ RẤT TIẾC, ĐÁP ÁN CHƯA CHÍNH XÁC ❌", "error"); };
 
-document.getElementById("btnHostWrong").onclick = () => {
-    showToast("❌ RẤT TIẾC, ĐÁP ÁN CHƯA CHÍNH XÁC ❌", "error");
-};
-
-// Khởi tạo Game
 function initGame() {
     revealedLetters = [];
     usedNumbers = [];
@@ -78,11 +69,8 @@ function initGame() {
     drawSecretBoard();
 }
 
-function getSectorColor(index) {
-    return baseColors[index % baseColors.length];
-}
+function getSectorColor(index) { return baseColors[index % baseColors.length]; }
 
-// Vẽ vòng quay
 function drawWheel() {
     const numSectors = sectors.length;
     if(numSectors === 0) return;
@@ -109,7 +97,6 @@ function drawWheel() {
         ctx.textAlign = "right";
         ctx.textBaseline = "middle";
         ctx.fillStyle = "white";
-        
         let fontSize = numSectors > 15 ? 20 : (numSectors > 10 ? 30 : 40);
         ctx.font = `bold ${fontSize}px Arial`;
         ctx.fillText(num, 210, 0);
@@ -118,13 +105,12 @@ function drawWheel() {
     ctx.translate(-250, -250); 
 }
 
-// Bảng chữ bí mật
 function drawSecretBoard() {
     const board = document.getElementById("secretBoard");
     board.innerHTML = "";
     let displayIndex = 1; 
 
-    [...gameData.secretWord].forEach((letter, i) => {
+    [...gameData.secretWord].forEach((letter) => {
         const tile = document.createElement("div");
         tile.className = "letter-tile";
         
@@ -161,13 +147,9 @@ document.getElementById("revealAllBtn").onclick = () => {
     document.getElementById("gameStatus").innerText = `Trò chơi kết thúc!`;
 };
 
-// Thuật toán quay
 spinBtn.onclick = () => {
     const availableNumbers = sectors.filter(n => !usedNumbers.includes(n));
-    if (availableNumbers.length === 0) {
-        alert("Đã quay hết danh sách câu hỏi!");
-        return;
-    }
+    if (availableNumbers.length === 0) { alert("Đã quay hết danh sách câu hỏi!"); return; }
 
     spinBtn.disabled = true;
     document.getElementById("gameStatus").innerText = "Đang quay...";
@@ -179,13 +161,11 @@ spinBtn.onclick = () => {
     const numSectors = sectors.length;
     const sectorAngle = 360 / numSectors;
     const targetDeg = 360 - (winningIndex * sectorAngle);
-    
     const spins = 5 * 360; 
     let rotationToAdd = (targetDeg - (currentRotation % 360));
     if (rotationToAdd < 0) rotationToAdd += 360; 
     
     currentRotation += rotationToAdd + spins;
-
     canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.1, 1)";
     canvas.style.transform = `rotate(${currentRotation}deg)`;
 
@@ -197,7 +177,6 @@ spinBtn.onclick = () => {
     }, 4200);
 };
 
-// Hiển thị câu hỏi
 function showQuestion(num) {
     const qIndex = num - 1;
     const qData = gameData.questions[qIndex];
@@ -208,15 +187,13 @@ function showQuestion(num) {
     const optionsArea = document.getElementById("optionsArea");
     optionsArea.innerHTML = "";
     
-    qData.options.forEach((opt, i) => {
+    qData.options.forEach((opt) => {
         if(opt.trim() === "") return;
         const div = document.createElement("div");
         div.className = "option-item";
         div.innerText = opt;
         div.onclick = () => {
-            if (!qData.multi) {
-                Array.from(optionsArea.children).forEach(c => c.classList.remove("selected"));
-            }
+            if (!qData.multi) { Array.from(optionsArea.children).forEach(c => c.classList.remove("selected")); }
             div.classList.toggle("selected");
         };
         optionsArea.appendChild(div);
@@ -229,12 +206,9 @@ function showQuestion(num) {
     submitBtn.innerText = "TRẢ LỜI";
 }
 
-// Chấm điểm Câu hỏi
 document.getElementById("submitBtn").onclick = () => {
     const qData = gameData.questions[currentQuestionIndex];
-    const selected = Array.from(document.querySelectorAll(".option-item.selected"))
-                          .map(el => qData.options.indexOf(el.innerText));
-    
+    const selected = Array.from(document.querySelectorAll(".option-item.selected")).map(el => qData.options.indexOf(el.innerText));
     if (selected.length === 0) { alert("Vui lòng chọn ít nhất 1 đáp án!"); return; }
 
     const isCorrect = JSON.stringify(selected.sort()) === JSON.stringify(qData.ans.sort());
@@ -263,22 +237,102 @@ document.getElementById("submitBtn").onclick = () => {
     }
 };
 
-/* CÀI ĐẶT (SETTINGS) */
-let editingIndex = -1; 
+/* ================== LUẬT CHƠI (VIEWER) ================== */
+const rulesModal = document.getElementById("rulesModal");
+document.getElementById("btnOpenRules").onclick = () => { 
+    const list = document.getElementById("rulesContentList");
+    list.innerHTML = "";
+    gameData.rules.forEach(r => {
+        const li = document.createElement("li");
+        li.innerHTML = `<b>${r.step}:</b> ${r.content}`;
+        list.appendChild(li);
+    });
+    rulesModal.style.display = "block"; 
+};
+document.getElementById("btnCloseRules").onclick = () => { rulesModal.style.display = "none"; };
+
+/* ================== CÀI ĐẶT (SETTINGS MANAGER) ================== */
+let editingQIndex = -1; 
+let editingRuleIndex = -1;
 
 const settingsModal = document.getElementById("settingsModal");
 const editQuestionModal = document.getElementById("editQuestionModal");
+const editRuleModal = document.getElementById("editRuleModal");
 
 document.getElementById("btnOpenSettings").onclick = () => {
     document.getElementById("inputMainTitle").value = gameData.mainTitle;
     document.getElementById("inputSecretWord").value = gameData.secretWord;
-    renderQuestionList();
+    renderRuleListSettings();
+    renderQuestionListSettings();
     settingsModal.style.display = "block";
 };
 
 document.getElementById("btnCloseSettings").onclick = () => { settingsModal.style.display = "none"; };
 
-function renderQuestionList() {
+// --- Quản lý Luật ---
+function renderRuleListSettings() {
+    const list = document.getElementById("ruleList");
+    list.innerHTML = "";
+    gameData.rules.forEach((r, index) => {
+        const item = document.createElement("div");
+        item.className = "q-item";
+        item.innerHTML = `
+            <div class="q-item-info"><strong>${r.step}:</strong> ${r.content.substring(0, 60)}...</div>
+            <div class="q-item-actions">
+                <button class="btn-edit" onclick="openEditRule(${index})">Sửa</button>
+                <button class="btn-delete" onclick="deleteRule(${index})">Xoá</button>
+            </div>
+        `;
+        list.appendChild(item);
+    });
+}
+
+function deleteRule(index) {
+    if(confirm("Xoá quy định này?")) {
+        gameData.rules.splice(index, 1);
+        renderRuleListSettings();
+    }
+}
+
+document.getElementById("btnAddRule").onclick = () => { openEditRule(-1); };
+
+function openEditRule(index) {
+    editingRuleIndex = index;
+    if (index === -1) {
+        document.getElementById("editRuleTitle").innerText = "THÊM LUẬT MỚI";
+        document.getElementById("erStep").value = "";
+        document.getElementById("erContent").value = "";
+    } else {
+        document.getElementById("editRuleTitle").innerText = `SỬA LUẬT CHƠI`;
+        const r = gameData.rules[index];
+        document.getElementById("erStep").value = r.step;
+        document.getElementById("erContent").value = r.content;
+    }
+    settingsModal.style.display = "none";
+    editRuleModal.style.display = "block";
+}
+
+document.getElementById("btnCancelEditRule").onclick = () => {
+    editRuleModal.style.display = "none";
+    settingsModal.style.display = "block";
+};
+
+document.getElementById("btnSaveRule").onclick = () => {
+    const step = document.getElementById("erStep").value.trim();
+    const content = document.getElementById("erContent").value.trim();
+    if(!step || !content) { alert("Vui lòng nhập đủ Tiêu đề bước và Nội dung!"); return; }
+
+    const newRule = { step: step, content: content };
+    if(editingRuleIndex === -1) gameData.rules.push(newRule);
+    else gameData.rules[editingRuleIndex] = newRule;
+
+    editRuleModal.style.display = "none";
+    renderRuleListSettings();
+    settingsModal.style.display = "block";
+};
+
+// --- Quản lý Câu hỏi ---
+function renderQuestionListSettings() {
     const list = document.getElementById("questionList");
     list.innerHTML = "";
     gameData.questions.forEach((q, index) => {
@@ -287,7 +341,7 @@ function renderQuestionList() {
         item.innerHTML = `
             <div class="q-item-info"><strong>Câu ${index + 1}:</strong> ${q.title}</div>
             <div class="q-item-actions">
-                <button class="btn-edit" onclick="openEditModal(${index})">Sửa</button>
+                <button class="btn-edit" onclick="openEditQuestion(${index})">Sửa</button>
                 <button class="btn-delete" onclick="deleteQuestion(${index})">Xoá</button>
             </div>
         `;
@@ -298,14 +352,14 @@ function renderQuestionList() {
 function deleteQuestion(index) {
     if(confirm("Bạn có chắc muốn xoá câu hỏi này?")) {
         gameData.questions.splice(index, 1);
-        renderQuestionList();
+        renderQuestionListSettings();
     }
 }
 
-document.getElementById("btnAddQuestion").onclick = () => { openEditModal(-1); };
+document.getElementById("btnAddQuestion").onclick = () => { openEditQuestion(-1); };
 
-function openEditModal(index) {
-    editingIndex = index;
+function openEditQuestion(index) {
+    editingQIndex = index;
     const texts = document.querySelectorAll(".opt-text");
     const checks = document.querySelectorAll(".opt-check");
     
@@ -320,13 +374,11 @@ function openEditModal(index) {
         const q = gameData.questions[index];
         document.getElementById("eqTitle").value = q.title;
         document.getElementById("eqContent").value = q.q;
-        
         texts.forEach((t, i) => {
             t.value = q.options[i] || "";
             checks[i].checked = q.ans.includes(i);
         });
     }
-    
     settingsModal.style.display = "none";
     editQuestionModal.style.display = "block";
 }
@@ -343,7 +395,6 @@ document.getElementById("btnSaveQuestion").onclick = () => {
 
     let options = [];
     let ans = [];
-    
     const texts = document.querySelectorAll(".opt-text");
     const checks = document.querySelectorAll(".opt-check");
     
@@ -358,25 +409,16 @@ document.getElementById("btnSaveQuestion").onclick = () => {
     if(options.length < 2) { alert("Phải có ít nhất 2 đáp án!"); return; }
     if(ans.length === 0) { alert("Phải chọn ít nhất 1 đáp án đúng!"); return; }
 
-    const newQ = {
-        title: title,
-        q: content,
-        options: options,
-        ans: ans,
-        multi: ans.length > 1
-    };
-
-    if(editingIndex === -1) {
-        gameData.questions.push(newQ);
-    } else {
-        gameData.questions[editingIndex] = newQ;
-    }
+    const newQ = { title: title, q: content, options: options, ans: ans, multi: ans.length > 1 };
+    if(editingQIndex === -1) gameData.questions.push(newQ);
+    else gameData.questions[editingQIndex] = newQ;
 
     editQuestionModal.style.display = "none";
-    renderQuestionList();
+    renderQuestionListSettings();
     settingsModal.style.display = "block";
 };
 
+// --- Lưu toàn bộ cấu hình ---
 document.getElementById("btnSaveAll").onclick = () => {
     const newTitle = document.getElementById("inputMainTitle").value.trim();
     const newWord = document.getElementById("inputSecretWord").value.trim();
@@ -390,6 +432,7 @@ document.getElementById("btnSaveAll").onclick = () => {
     
     settingsModal.style.display = "none";
     initGame();
+    showToast("Đã lưu mọi cấu hình thành công!", "success");
 };
 
 initGame();
