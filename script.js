@@ -1,4 +1,4 @@
-// Dữ liệu Game (Bao gồm Cấu hình, Luật chơi, Câu hỏi)
+// Dữ liệu Game
 let gameData = {
     mainTitle: "CHIẾC NÓN KỲ DIỆU - OTC JUN'26",
     secretWord: "laithikimngan",
@@ -23,6 +23,26 @@ let gameData = {
     ]
 };
 
+/* ================== AUDIO LOGIC ================== */
+const audioSpin = new Audio('nhac/chiecnonkidieu.mp3');
+const audioTrue = new Audio('nhac/true.mp3');
+const audioFalse = new Audio('nhac/false.mp3');
+const audioCongrats = new Audio('nhac/chucmung.mp3');
+const audioIncorrect = new Audio('nhac/chuachinhxac.mp3');
+
+function stopAllAudio() {
+    audioSpin.pause(); audioSpin.currentTime = 0;
+    audioTrue.pause(); audioTrue.currentTime = 0;
+    audioFalse.pause(); audioFalse.currentTime = 0;
+    audioCongrats.pause(); audioCongrats.currentTime = 0;
+    audioIncorrect.pause(); audioIncorrect.currentTime = 0;
+}
+
+function playSound(audioEl) {
+    stopAllAudio();
+    audioEl.play().catch(err => console.log("Trình duyệt chặn Audio (cần tương tác người dùng):", err));
+}
+
 /* ================== GAME LOGIC ================== */
 let revealedLetters = [];
 let usedNumbers = [];
@@ -45,16 +65,24 @@ function showToast(message, type) {
     toastTimeout = setTimeout(() => { toast.classList.add("hidden"); }, 3000);
 }
 
-document.getElementById("btnHostCorrect").onclick = () => { showToast("🎉 CHÚC MỪNG! ĐÁP ÁN HOÀN TOÀN CHÍNH XÁC 🎉", "success"); };
-document.getElementById("btnHostWrong").onclick = () => { showToast("❌ RẤT TIẾC, ĐÁP ÁN CHƯA CHÍNH XÁC ❌", "error"); };
+document.getElementById("btnHostCorrect").onclick = () => { 
+    playSound(audioCongrats);
+    showToast("🎉 CHÚC MỪNG! ĐÁP ÁN HOÀN TOÀN CHÍNH XÁC 🎉", "success"); 
+};
+
+document.getElementById("btnHostWrong").onclick = () => { 
+    playSound(audioIncorrect);
+    showToast("❌ RẤT TIẾC, ĐÁP ÁN CHƯA CHÍNH XÁC ❌", "error"); 
+};
 
 function initGame() {
+    stopAllAudio();
     revealedLetters = [];
     usedNumbers = [];
     canReveal = false;
     currentRotation = 0;
     canvas.style.transition = "none";
-    canvas.style.transform = `rotate(0deg)`;
+    canvas.style.transform = `rotate(0deg) translateZ(0)`;
     
     document.getElementById("mainTitle").innerText = gameData.mainTitle;
     document.getElementById("numberLog").innerHTML = "";
@@ -151,6 +179,8 @@ spinBtn.onclick = () => {
     const availableNumbers = sectors.filter(n => !usedNumbers.includes(n));
     if (availableNumbers.length === 0) { alert("Đã quay hết danh sách câu hỏi!"); return; }
 
+    playSound(audioSpin);
+
     spinBtn.disabled = true;
     document.getElementById("gameStatus").innerText = "Đang quay...";
     document.getElementById("gameStatus").style.color = "#ffcc00";
@@ -161,23 +191,29 @@ spinBtn.onclick = () => {
     const numSectors = sectors.length;
     const sectorAngle = 360 / numSectors;
     const targetDeg = 360 - (winningIndex * sectorAngle);
-    const spins = 5 * 360; 
+    
+    // Tăng số vòng quay lên 12 vòng để phù hợp với thời gian dài hơn
+    const spins = 12 * 360; 
     let rotationToAdd = (targetDeg - (currentRotation % 360));
     if (rotationToAdd < 0) rotationToAdd += 360; 
     
     currentRotation += rotationToAdd + spins;
-    canvas.style.transition = "transform 4s cubic-bezier(0.17, 0.67, 0.1, 1)";
-    canvas.style.transform = `rotate(${currentRotation}deg)`;
+    
+    // Thời gian quay được nâng lên 8 giây cho mượt và có thời gian nghe nhạc
+    canvas.style.transition = "transform 8s cubic-bezier(0.15, 0.85, 0.15, 1)";
+    canvas.style.transform = `rotate(${currentRotation}deg) translateZ(0)`;
 
+    // Khớp thời gian animation + 200ms
     setTimeout(() => {
         usedNumbers.push(winningNum);
         document.getElementById("numberLog").innerHTML += `<span>${winningNum}</span>`;
         drawWheel(); 
         showQuestion(winningNum);
-    }, 4200);
+    }, 8200); 
 };
 
 function showQuestion(num) {
+    stopAllAudio();
     const qIndex = num - 1;
     const qData = gameData.questions[qIndex];
     currentQuestionIndex = qIndex;
@@ -216,6 +252,7 @@ document.getElementById("submitBtn").onclick = () => {
     document.getElementById("submitBtn").disabled = true;
 
     if (isCorrect) {
+        playSound(audioTrue);
         feedback.innerText = "CHÍNH XÁC! Bạn có quyền chọn 1 số để Lật Chữ.";
         feedback.style.color = "#2ecc71";
         canReveal = true;
@@ -224,8 +261,9 @@ document.getElementById("submitBtn").onclick = () => {
             document.getElementById("gameStatus").innerText = "Hãy mời người chơi ĐỌC SỐ ĐỂ LẬT CHỮ!";
             document.getElementById("gameStatus").style.color = "#00ffcc";
             spinBtn.disabled = false;
-        }, 2000);
+        }, 2500);
     } else {
+        playSound(audioFalse);
         feedback.innerText = "SAI RỒI! Rất tiếc, bạn đã mất lượt lật chữ.";
         feedback.style.color = "#e74c3c";
         setTimeout(() => {
@@ -233,7 +271,7 @@ document.getElementById("submitBtn").onclick = () => {
             document.getElementById("gameStatus").innerText = "Nhấn QUAY để chơi tiếp.";
             document.getElementById("gameStatus").style.color = "#fff";
             spinBtn.disabled = false;
-        }, 2000);
+        }, 2500);
     }
 };
 
