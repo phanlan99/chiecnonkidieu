@@ -14,9 +14,8 @@
 
     <div class="top-right-controls">
         <button id="btnOpenSettings" class="btn-settings">⚙️ CÀI ĐẶT</button>
-        
         <div class="host-controls">
-            <span class="host-label">🎤 MC ĐIỀU KHIỂN:</span>
+            
             <button id="btnHostCorrect" class="btn-host success">🎉 CHÚC MỪNG</button>
             <button id="btnHostWrong" class="btn-host error">❌ CHƯA CHÍNH XÁC</button>
         </div>
@@ -32,26 +31,47 @@
                 <h3 id="secretTitle">Ô CHỮ BÍ MẬT</h3>
                 <button id="revealAllBtn" class="btn-reveal">MỞ TOÀN BỘ ĐÁP ÁN</button>
             </div>
-            
             <div id="secretBoard" class="secret-board"></div>
         </div>
 
-        <div class="game-main">
-            <div class="wheel-area">
-                <div class="pointer"></div>
-                <canvas id="wheelCanvas" width="500" height="500"></canvas>
-                <button id="spinBtn">QUAY</button>
+        <div class="game-layout">
+            <div class="wheel-section">
+                <div class="wheel-area">
+                    <div class="pointer"></div>
+                    <canvas id="wheelCanvas" width="550" height="550"></canvas>
+                    <button id="spinBtn">QUAY</button>
+                </div>
+                <div class="status-box mt-20">
+                    <h4 style="margin-top:0; color: var(--secondary);">Trạng thái</h4>
+                    <p id="gameStatus">Nhấn QUAY để chọn người chơi!</p>
+                </div>
             </div>
 
-            <div class="info-area">
-                <div class="status-box">
-                    <h4>Trạng thái trò chơi</h4>
-                    <p id="gameStatus">Nhấn QUAY để bắt đầu!</p>
+            <div class="board-section">
+                <div class="question-board">
+                    <h3 class="board-title">BẢNG CÂU HỎI</h3>
+                    <p style="font-size: 14px; margin-bottom: 15px; color: #ccc;">(Mời người chơi chọn số sau khi quay trúng)</p>
+                    <div id="questionGrid" class="q-grid"></div>
                 </div>
-                <div class="used-numbers">
-                    <h4>Các số đã quay:</h4>
-                    <div id="numberLog"></div>
+
+                <div class="used-numbers mt-20">
+                    <h4 style="margin-top:0; color: var(--secondary);">Người chơi đã được gọi:</h4>
+                    <div id="numberLog" class="player-log"></div>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="questionModal" class="modal">
+        <div class="modal-content question-modal-content">
+            <h2 id="modalTitle" class="q-modal-title">CÂU HỎI</h2>
+            <div id="questionText" class="question-text"></div>
+            <div id="optionsArea" class="options-grid"></div>
+            <p id="feedback" class="feedback-text"></p>
+            <div class="q-actions">
+                <button id="btnSubmitAns" class="btn-q-submit">TRẢ LỜI</button>
+                <button id="btnRefreshAns" class="btn-q-refresh">🔄 LÀM LẠI</button>
+                <button id="btnCloseQuestion" class="btn-q-close">ĐÓNG CÂU HỎI ❌</button>
             </div>
         </div>
     </div>
@@ -63,19 +83,8 @@
                 <button id="btnCloseRules" class="btn-close-settings">Đóng ❌</button>
             </div>
             <div class="rules-body">
-                <ul id="rulesContentList">
-                    </ul>
+                <ul id="rulesContentList"></ul>
             </div>
-        </div>
-    </div>
-
-    <div id="questionModal" class="modal">
-        <div class="modal-content">
-            <h2 id="modalTitle">CÂU HỎI</h2>
-            <div id="questionText" class="question-text"></div>
-            <div id="optionsArea" class="options-grid"></div>
-            <button id="submitBtn">TRẢ LỜI</button>
-            <p id="feedback"></p>
         </div>
     </div>
 
@@ -92,9 +101,24 @@
                     <input type="text" id="inputMainTitle" class="form-control">
                 </div>
 
+                <div style="display: flex; gap: 20px;">
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ô CHỮ BÍ MẬT <strong style="color:#2ecc71;">(ĐÁP ÁN ĐÚNG)</strong>:</label>
+                        <input type="text" id="inputSecretWord" class="form-control">
+                    </div>
+                    <div class="form-group" style="flex: 1;">
+                        <label>Ô CHỮ BÍ MẬT <strong style="color:#e74c3c;">(ĐÃ BỊ XÁO TRỘN)</strong>:</label>
+                        <input type="text" id="inputScrambledWord" class="form-control">
+                        <small style="color: #888;">* Lưu ý: Độ dài của chữ xáo trộn phải bằng với chữ đáp án.</small>
+                    </div>
+                </div>
+                
+                <hr style="margin: 20px 0;">
+
+                <div class="q-header"><h3 style="margin: 0; color: #e67e22;">👥 DANH SÁCH NHÂN VIÊN</h3></div>
                 <div class="form-group">
-                    <label>Ô CHỮ BÍ MẬT (Viết liền không dấu hoặc có dấu tuỳ ý):</label>
-                    <input type="text" id="inputSecretWord" class="form-control">
+                    <label>Mỗi nhân viên 1 dòng (Tự động loại bỏ khoảng trắng dư thừa):</label>
+                    <textarea id="inputEmployees" class="form-control" rows="8"></textarea>
                 </div>
                 
                 <hr style="margin: 20px 0;">
@@ -123,16 +147,8 @@
     <div id="editRuleModal" class="modal">
         <div class="modal-content">
             <h3 id="editRuleTitle" style="color: #27ae60;">Thêm/Sửa Luật Chơi</h3>
-            
-            <div class="form-group">
-                <label>Tiêu đề bước (VD: Bước 1, Bước 2, Đặc biệt):</label>
-                <input type="text" id="erStep" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Nội dung quy định:</label>
-                <textarea id="erContent" class="form-control" rows="5"></textarea>
-            </div>
-            
+            <div class="form-group"><label>Tiêu đề bước:</label><input type="text" id="erStep" class="form-control"></div>
+            <div class="form-group"><label>Nội dung quy định:</label><textarea id="erContent" class="form-control" rows="5"></textarea></div>
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button id="btnSaveRule" class="btn-primary" style="background: #27ae60;">Lưu Luật</button>
                 <button id="btnCancelEditRule" class="btn-secondary">Huỷ</button>
@@ -143,26 +159,15 @@
     <div id="editQuestionModal" class="modal">
         <div class="modal-content">
             <h3 id="editModalTitle">Thêm/Sửa Câu Hỏi</h3>
-            
-            <div class="form-group">
-                <label>Tiêu đề (VD: Câu 1 - Benzac):</label>
-                <input type="text" id="eqTitle" class="form-control">
-            </div>
-            <div class="form-group">
-                <label>Nội dung câu hỏi:</label>
-                <textarea id="eqContent" class="form-control" rows="3"></textarea>
-            </div>
-            
-            <label>Các đáp án (Tích vào ô vuông phía trước nếu đó là đáp án ĐÚNG):</label>
-            <p style="font-size: 13px; color: #e74c3c; margin-bottom: 10px;">* Nếu tích 2 ô trở lên, game tự nhận diện là câu hỏi "Nhiều đáp án đúng".</p>
-            
+            <div class="form-group"><label>Tiêu đề:</label><input type="text" id="eqTitle" class="form-control"></div>
+            <div class="form-group"><label>Nội dung câu hỏi:</label><textarea id="eqContent" class="form-control" rows="3"></textarea></div>
+            <label>Các đáp án (Tích vào ô vuông phía trước nếu đáp án ĐÚNG):</label>
             <div id="eqOptionsArea">
                 <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án A"></div>
                 <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án B"></div>
                 <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án C"></div>
                 <div class="option-edit-row"><input type="checkbox" class="opt-check"><input type="text" class="opt-text form-control" placeholder="Đáp án D"></div>
             </div>
-            
             <div style="margin-top: 20px; display: flex; gap: 10px;">
                 <button id="btnSaveQuestion" class="btn-primary">Lưu Câu Hỏi</button>
                 <button id="btnCancelEdit" class="btn-secondary">Huỷ</button>
